@@ -12,11 +12,12 @@ int NUMBER_OF_CUSTOMER;
 
 void get_number_of_resources(int argc);
 void get_number_of_customers();
-int *get_resources(char *argv[]);
+const int *get_resources(char *argv[]);
+int *get_resources_available(const int *resources, int **customers_alloction);
 int **get_customers_alocation();
 const int **get_customers();
 int *get_request();
-int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer);
+int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer, int *availables_resources);
 void exec_RQ(int ***customers_alloction, int *request, int customer);
 int check_RL(int *resquest, int *customers_alloction, int customer);
 void exec_RL(int ***customers_alloction, int *request, int customer);
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
     get_number_of_resources(argc);
     get_number_of_customers();
     
-    int *resources = get_resources(argv);
+    const int *resources = get_resources(argv);
     const int **customers_maximum = get_customers();
     int **customers_alloction = get_customers_alocation();
 
@@ -59,8 +60,9 @@ int main(int argc, char *argv[]) {
             int *request = get_request();
 
             if (strcmp(command, "RQ") == 0) {
+                int *availables_resources = get_resources_available(resources, customers_alloction);
 
-                if (check_RQ(request, customers_maximum[customer_number], customers_alloction[customer_number], customer_number)) {
+                if (check_RQ(request, customers_maximum[customer_number], customers_alloction[customer_number], customer_number, availables_resources)) {
                     exec_RQ(&customers_alloction, request, customer_number);
                 }
 
@@ -189,7 +191,7 @@ void get_number_of_customers() {
     check_commands_file2();
 }
 
-int *get_resources(char *argv[]) {
+const int *get_resources(char *argv[]) {
     int *resources = (int*)malloc(NUMBER_OF_RESOURCES* sizeof(int));
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
@@ -275,7 +277,23 @@ int *get_customer_need(const int *customers_maximum, int *customers_alloction) {
     return customer_need;
 }
 
-int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer) {
+int *get_resources_available(const int *resources, int **customers_alloction) {
+    int *available = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        int sun_used_resurces = 0;
+
+        for (int j = 0; j < NUMBER_OF_CUSTOMER; j++) {
+            sun_used_resurces += customers_alloction[j][i];
+        }
+
+        available[i] = resources[i] - sun_used_resurces;
+    }
+
+    return available;
+}
+
+int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer, int *availables_resources) {
     int *customer_need = get_customer_need(customers_maximum, customers_alloction);
     int check = 1;
 
@@ -283,6 +301,24 @@ int check_RQ(int *resquest, const int *customers_maximum, int *customers_allocti
         if (customer_need[i] < resquest[i]) {
             check = 0;
             break;
+        }
+
+        if (availables_resources[i] < resquest[i]) {
+            printf("The resources ");
+
+            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                printf("%d ", availables_resources[i]);
+            }
+
+            printf("are not enough to customer %d request ", customer);
+
+            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                printf("%d ", resquest[i]);
+            }
+
+            printf("\n");
+
+            return 0;
         }
     }
 
