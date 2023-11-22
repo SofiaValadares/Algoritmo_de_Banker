@@ -7,40 +7,39 @@
 #define COMMANDS_FILE "commands.txt"
 #define RESULT_FILE "result.txt"
 
+
 int NUMBER_OF_RESOURCES;
 int NUMBER_OF_CUSTOMER;
 
+typedef struct customers {
+    int maximum;
+    int allocation;
+    int need;
+} Customers;
+
+
 void get_number_of_resources(int argc);
 void get_number_of_customers();
-const int *get_resources(char *argv[]);
-int *get_resources_available(const int *resources, int **customers_alloction);
-int **get_customers_alocation();
-const int **get_customers();
+int *get_resources(char *argv[]);
 int *get_request();
-int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer, int *availables_resources);
-void exec_RQ(int ***customers_alloction, int *request, int customer);
-int check_RL(int *resquest, int *customers_alloction, int customer);
-void exec_RL(int ***customers_alloction, int *request, int customer);
+Customers **get_customers();
+int check_RQ(int *resquest, Customers *customers, int customer_number, int *available);
+void exec_RQ(Customers ***customers, int **available, int *request, int customer_number);
+int check_RL(int *resquest, Customers *customers, int customer_number);
+void exec_RL(Customers ***customers, int **available, int *request, int customer_number);
+void print_status(Customers **customers, int *available);
 
 int main(int argc, char *argv[]) {
     get_number_of_resources(argc);
     get_number_of_customers();
     
-    const int *resources = get_resources(argv);
-    const int **customers_maximum = get_customers();
-    int **customers_alloction = get_customers_alocation();
-
-
-    FILE *commands = NULL;
-    commands = fopen(COMMANDS_FILE, "r");
-
-    if (commands == NULL) {
-        fprintf(stderr, "Fail to read commands.txt\n");
-        exit(0);
-    }
-
     FILE *original_stdout = stdout;
     FILE *original_stdin = stdin;
+
+    const int *resources = (const int*) get_resources(argv);
+    int *available = get_resources(argv);
+
+    Customers **customers = get_customers();
 
     freopen(RESULT_FILE, "w", stdout);
     freopen(COMMANDS_FILE, "r", stdin);
@@ -60,44 +59,26 @@ int main(int argc, char *argv[]) {
             int *request = get_request();
 
             if (strcmp(command, "RQ") == 0) {
-                int *availables_resources = get_resources_available(resources, customers_alloction);
-
-                if (check_RQ(request, customers_maximum[customer_number], customers_alloction[customer_number], customer_number, availables_resources)) {
-                    exec_RQ(&customers_alloction, request, customer_number);
+                if (check_RQ(request, customers[customer_number], customer_number, available)) {
+                    exec_RQ(&customers, &available, request, customer_number);
                 }
-
             } else if (strcmp(command, "RL") == 0) {
-
-                if (check_RL(request, customers_alloction[customer_number], customer_number)) {
-                    exec_RL(&customers_alloction, request, customer_number);
+                if (check_RL(request, customers[customer_number], customer_number)) {
+                    exec_RL(&customers, &available, request, customer_number);
                 }
             }
         } else if (strcmp(command, "*") == 0) {
-            
+            print_status(customers, available);
         }
 
 
     }   
-
-    /*for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("%d ", resources[i]);
-    }
-    printf("\n");
-
-    for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
-        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-            printf("%d ", customers[i][j]);
-        }
-        printf("\n");
-    }*/
 
     fflush(stdout);
     fflush(stdin);
 
     dup2(fileno(original_stdout), fileno(stdout));
     dup2(fileno(original_stdin), fileno(stdout));
-
-    fclose(commands);
 
     return 0;
 }
@@ -167,7 +148,7 @@ void get_number_of_customers() {
         exit(0);
     }
 
-    char line[101];
+    char line[1001];
 
     while (fgets(line, sizeof(line), f) != NULL) {
         NUMBER_OF_CUSTOMER++;
@@ -191,7 +172,7 @@ void get_number_of_customers() {
     check_commands_file2();
 }
 
-const int *get_resources(char *argv[]) {
+int *get_resources(char *argv[]) {
     int *resources = (int*)malloc(NUMBER_OF_RESOURCES* sizeof(int));
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
@@ -201,7 +182,7 @@ const int *get_resources(char *argv[]) {
     return resources;
 }
 
-int *resources_customers(char line[]) {
+int *get_resources_customers(char line[]) {
     int *resources = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
 
     int ind = 0;
@@ -218,22 +199,24 @@ int *resources_customers(char line[]) {
     return resources;
 }
 
-int **get_customers_alocation() {
-    int **customers = (int**)malloc(NUMBER_OF_CUSTOMER * sizeof(int*));
+Customers **get_customers_alocation() {
+    Customers **customers = (Customers **)malloc(NUMBER_OF_CUSTOMER * sizeof(Customers *));
 
     for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
-        customers[i] = (int*)malloc(NUMBER_OF_RESOURCES *sizeof(int));
+        customers[i] = (Customers *)malloc(NUMBER_OF_RESOURCES *sizeof(Customers));
 
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-            customers[i][j] = 0;
+            customers[i][j].maximum = 0;
+            customers[i][j].allocation = 0;
+            customers[i][j].need = 0;
         }
     }
 
     return customers;
 }
 
-const int **get_customers() {
-    const int **customers = (const int**) get_customers_alocation();
+Customers **get_customers() {
+    Customers **customers = get_customers_alocation();
 
     FILE *f = NULL;
 
@@ -249,7 +232,12 @@ const int **get_customers() {
 
         fgets(line, sizeof(line), f);
 
-        customers[i] = resources_customers(line);
+        int *resources_customers = get_resources_customers(line);
+
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            customers[i][j].maximum = resources_customers[j];
+            customers[i][j].need = resources_customers[j];
+        }
     }
 
     fclose(f);
@@ -267,50 +255,28 @@ int *get_request() {
     return request;
 }
 
-int *get_customer_need(const int *customers_maximum, int *customers_alloction) {
-    int *customer_need = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
-
+int check_RQ(int *resquest, Customers *customers, int customer_number, int *available) {
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        customer_need[i] = customers_maximum[i] - customers_alloction[i];
-    }
+        if (customers[i].need < resquest[i]) {
+            printf("The customer %d request ", customer_number);
 
-    return customer_need;
-}
+            for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+                printf("%d ", resquest[i]);
+            }
 
-int *get_resources_available(const int *resources, int **customers_alloction) {
-    int *available = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+            printf("was denied because exceed its maximum need\n");   
 
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        int sun_used_resurces = 0;
-
-        for (int j = 0; j < NUMBER_OF_CUSTOMER; j++) {
-            sun_used_resurces += customers_alloction[j][i];
+            return 0;
         }
 
-        available[i] = resources[i] - sun_used_resurces;
-    }
-
-    return available;
-}
-
-int check_RQ(int *resquest, const int *customers_maximum, int *customers_alloction, int customer, int *availables_resources) {
-    int *customer_need = get_customer_need(customers_maximum, customers_alloction);
-    int check = 1;
-
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        if (customer_need[i] < resquest[i]) {
-            check = 0;
-            break;
-        }
-
-        if (availables_resources[i] < resquest[i]) {
+        if (available[i] < resquest[i]) {
             printf("The resources ");
 
             for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                printf("%d ", availables_resources[j]);
+                printf("%d ", available[j]);
             }
 
-            printf("are not enough to customer %d request ", customer);
+            printf("are not enough to customer %d request ", customer_number);
 
             for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
                 printf("%d ", resquest[j]);
@@ -322,24 +288,17 @@ int check_RQ(int *resquest, const int *customers_maximum, int *customers_allocti
         }
     }
 
-    if (!check) {
-        printf("The customer %d request ", customer);
-
-        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-            printf("%d ", resquest[i]);
-        }
-
-        printf("was denied because exceed its maximum need\n");        
-    }
-
-    return check;
+    return 1;
 }
 
-void exec_RQ(int ***customers_alloction, int *request, int customer) {
-    printf("Allocate to customer %d the resources ", customer);
+void exec_RQ(Customers ***customers, int **available, int *request, int customer_number) {
+    printf("Allocate to customer %d the resources ", customer_number);
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        (*customers_alloction)[customer][i] += request[i];
+        (*customers)[customer_number][i].allocation += request[i];
+        (*customers)[customer_number][i].need -= request[i];
+
+        (*available)[i] -= request[i];
 
         printf("%d ", request[i]);
     }
@@ -347,36 +306,152 @@ void exec_RQ(int ***customers_alloction, int *request, int customer) {
     printf("\n");
 }
 
-int check_RL(int *resquest, int *customers_alloction, int customer) {
-    int check = 1;
-
+int check_RL(int *resquest, Customers *customers, int customer_number) {
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        if (customers_alloction[i] < resquest[i]) {
-            check = 0;
-            break;
+        if (customers[i].allocation < resquest[i]) {
+            printf("The customer %d released ", customer_number);
+
+            for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+                printf("%d ", resquest[i]);
+            }
+
+            printf("was denied because exceed its maximum allocation\n");   
+
+            return 0;
         }
     }
 
-    if (!check) {
-        printf("The customer %d released ", customer);
-
-        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-            printf("%d ", resquest[i]);
-        }
-
-        printf("was denied because exceed its maximum allocation\n");        
-    }
-
-    return check;
+    return 1;
 }
 
-void exec_RL(int ***customers_alloction, int *request, int customer) {
-    printf("Release from customer %d the resources ", customer);
+void exec_RL(Customers ***customers, int **available, int *request, int customer_number) {
+    printf("Release from customer %d the resources ", customer_number);
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        (*customers_alloction)[customer][i] -= request[i];
+        (*customers)[customer_number][i].allocation -= request[i];
+        (*customers)[customer_number][i].need += request[i];
+
+        (*available)[i] += request[i];
 
         printf("%d ", request[i]);
+    }
+
+    printf("\n");
+}
+
+Customers *get_numbers_formats(Customers **customers) {
+    Customers *numbers_formats = (Customers*)malloc(NUMBER_OF_RESOURCES * sizeof(Customers));
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        Customers biggest_numbers = {1, 1, 1};
+
+        for (int j = 0; j < NUMBER_OF_CUSTOMER; j++) {
+            if (customers[j][i].maximum > biggest_numbers.maximum) {
+                biggest_numbers.maximum = customers[j][i].maximum;
+            }
+
+            if (customers[j][i].allocation > biggest_numbers.allocation) {
+                biggest_numbers.allocation = customers[j][i].allocation;
+            }
+
+            if (customers[j][i].need > biggest_numbers.need) {
+                biggest_numbers.need = customers[j][i].need;
+            }
+        }
+
+        numbers_formats[i].maximum = 0;
+
+        while (biggest_numbers.maximum > 0) {
+            biggest_numbers.maximum /= 10;
+            numbers_formats[i].maximum++;
+        }
+
+        numbers_formats[i].allocation = 0;
+
+        while (biggest_numbers.allocation > 0) {
+            biggest_numbers.allocation /= 10;
+            numbers_formats[i].allocation++;
+        }
+
+        numbers_formats[i].need= 0;
+
+        while (biggest_numbers.need> 0) {
+            biggest_numbers.need /= 10;
+            numbers_formats[i].need++;
+        }
+        
+    }
+
+    return numbers_formats;
+}
+
+Customers get_size_line_numbers(Customers *numbers_formats) {
+    Customers size_line_numbers = {0, 0, 0};
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        size_line_numbers.maximum += numbers_formats[i].maximum;
+        size_line_numbers.maximum++;
+
+        size_line_numbers.allocation += numbers_formats[i].allocation;
+        size_line_numbers.allocation++;
+
+        size_line_numbers.need += numbers_formats[i].need;
+        size_line_numbers.need++;
+    }
+
+    return size_line_numbers;
+}
+
+void print_status(Customers **customers, int *available) {
+    Customers *numbers_formats = get_numbers_formats(customers);
+    Customers size_line_numbers = get_size_line_numbers(numbers_formats);
+
+    printf("MAXIMUM ");
+
+    for (int i = 8; i < size_line_numbers.maximum; i++) {
+        printf(" ");
+    }
+
+    printf("| ALLOCATION ");
+
+    for (int i = 11; i < size_line_numbers.allocation; i++) {
+        printf(" ");
+    }
+
+    printf("| NEED\n");
+
+    for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%*d ", numbers_formats[j].maximum, customers[i][j].maximum);
+        }
+
+        for (int j = size_line_numbers.maximum; j < 8; j++) {
+            printf(" ");
+        }
+
+        printf("| ");
+
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%*d ", numbers_formats[j].allocation, customers[i][j].allocation);
+        }
+
+        for (int j = size_line_numbers.allocation; j < 11; j++) {
+            printf(" ");
+        }
+
+        printf("| ");
+
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%*d ", numbers_formats[j].need, customers[i][j].need);
+        }
+
+        printf("\n");
+    }
+
+    printf("AVAILABLE ");
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("%d ", available[i]);
     }
 
     printf("\n");
