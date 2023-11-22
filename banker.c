@@ -307,13 +307,13 @@ int check_RQ(int *resquest, const int *customers_maximum, int *customers_allocti
             printf("The resources ");
 
             for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                printf("%d ", availables_resources[i]);
+                printf("%d ", availables_resources[j]);
             }
 
             printf("are not enough to customer %d request ", customer);
 
             for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                printf("%d ", resquest[i]);
+                printf("%d ", resquest[j]);
             }
 
             printf("\n");
