@@ -1,0 +1,12 @@
+Allocate to customer 0 the resources 0 2 1 
+Allocate to customer 2 the resources 3 0 2 
+The customer 1 request 2 0 3 was denied because exceed its maximum need
+Allocate to customer 1 the resources 2 0 0 
+Allocate to customer 4 the resources 0 0 2 
+Release from customer 0 the resources0 1 1 
+Allocate to customer 3 the resources 2 1 1 
+Allocate to customer 4 the resources 4 0 0 
+The customer 0 released 0 1 1 was denied because exceed its maximum allocation
+Allocate to customer 1 the resources 1 0 2 
+Allocate to customer 0 the resources 0 2 0 
+The customer 2 request 0 1 0 was denied because exceed its maximum need
