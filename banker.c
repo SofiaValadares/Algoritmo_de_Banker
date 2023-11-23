@@ -95,6 +95,31 @@ void check_commands_file() {
         exit(0);
     }
 
+    char ch;
+    char ch_ant = '\n';
+    ch = fgetc(f);
+
+    while (ch != EOF) {
+        if ((ch != ' ' || (ch == ' ' && ch_ant == ' ')) && (ch < '0' || ch > '9') && (ch != '\n' || (ch == '\n' && ch_ant == '\n')) && (ch != 'R' && (ch == 'R' && ch_ant != '\n')) && (ch != 'Q' || (ch == 'Q' && ch_ant != 'R')) && (ch != 'L' || (ch == 'L' && ch_ant != 'R')) && (ch != '*' || (ch == '*' && ch_ant != '\n'))) {
+            fprintf(stderr, "Fail to read commands.txt\n");
+            exit(0);
+        }
+
+        ch_ant = ch;
+        ch = fgetc(f);
+    }
+
+    fseek(f, -1, SEEK_END);
+    ch = fgetc(f);
+
+    if (ch == '\n') {
+        fprintf(stderr, "Fail to read commands.txt\n");
+        exit(0);
+    }
+
+    fseek(f, 0, SEEK_SET);
+    ch = fgetc(f);
+
     fclose(f);
 }
 
@@ -160,7 +185,29 @@ void get_number_of_customers() {
     }
 
     char ch;
-    ch = fgetc  (f);
+    char ch_ant = '\n';
+    ch = fgetc(f);
+
+    while (ch != EOF) {
+        if ((ch != ',' || (ch == ',' && ch_ant == ',')) && (ch < '0' || ch > '9') && (ch != '\n' || (ch == '\n' && ch_ant == '\n'))) {
+            fprintf(stderr, "Fail to read customer.txt\n");
+            exit(0);
+        }
+
+        ch_ant = ch;
+        ch = fgetc(f);
+    }
+
+    fseek(f, -1, SEEK_END);
+    ch = fgetc(f);
+
+    if (ch == '\n') {
+        fprintf(stderr, "Fail to read customer.txt\n");
+        exit(0);
+    }
+
+    fseek(f, 0, SEEK_SET);
+    ch = fgetc(f);
 
     while (ch != EOF) {
         int tan = 1;
@@ -179,6 +226,7 @@ void get_number_of_customers() {
         }
 
         NUMBER_OF_CUSTOMER++;
+
         ch = fgetc(f);
     }
 
