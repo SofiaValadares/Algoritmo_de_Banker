@@ -108,21 +108,30 @@ void check_commands_file2() {
         exit(0);
     }
 
-    char line[1501];
+    char ch;
+    ch = fgetc  (f);
 
-    while (fgets(line, sizeof(line), f) != NULL) {
+    while (ch != EOF) {
         int tan = -1;
 
-        for (int i = 0; i < strlen(line); i++) {
-            if (line[i] == ' ') {
+        while(ch != '\n' && ch != EOF) {
+            if (ch == ' ') {
                 tan++;
             }
-        }      
 
-        if (tan != NUMBER_OF_RESOURCES && line[0] != '*') {
+            if (ch == '*') {
+                tan = NUMBER_OF_RESOURCES;
+            }
+
+            ch = fgetc(f);
+        }
+        
+        if (tan != NUMBER_OF_RESOURCES) {
             fprintf(stderr, "Incompatibility between commands.txt and command line\n");
             exit(0);
-        }  
+        }
+
+        ch = fgetc(f);
     }
 
     fclose(f);
@@ -150,23 +159,27 @@ void get_number_of_customers() {
         exit(0);
     }
 
-    char line[1501];
+    char ch;
+    ch = fgetc  (f);
 
-    while (fgets(line, sizeof(line), f) != NULL) {
-        NUMBER_OF_CUSTOMER++;
-
+    while (ch != EOF) {
         int tan = 1;
 
-        for (int i = 0; i < strlen(line); i++) {
-            if (line[i] == ',') {
+        while(ch != '\n' && ch != EOF) {
+            if (ch == ',') {
                 tan++;
             }
-        }      
 
+            ch = fgetc(f);
+        }
+        
         if (tan != NUMBER_OF_RESOURCES) {
             fprintf(stderr, "Incompatibility between customer.txt and command line\n");
             exit(0);
-        }  
+        }
+
+        NUMBER_OF_CUSTOMER++;
+        ch = fgetc(f);
     }
 
     fclose(f);
