@@ -36,7 +36,6 @@ int main(int argc, char *argv[]) {
     FILE *original_stdout = stdout;
     FILE *original_stdin = stdin;
 
-    const int *resources = (const int*) get_resources(argv);
     int *available = get_resources(argv);
 
     Customers **customers = get_customers();
@@ -67,11 +66,11 @@ int main(int argc, char *argv[]) {
                     exec_RL(&customers, &available, request, customer_number);
                 }
             }
+
+            free(request);
         } else if (strcmp(command, "*") == 0) {
             print_status(customers, available);
         }
-
-
     }   
 
     fflush(stdout);
@@ -79,6 +78,9 @@ int main(int argc, char *argv[]) {
 
     dup2(fileno(original_stdout), fileno(stdout));
     dup2(fileno(original_stdin), fileno(stdout));
+
+    free(available);
+    free(customers);
 
     return 0;
 }
@@ -319,15 +321,20 @@ int check_safe_state(int *resquest, Customers **customers, int customer_number, 
  
         if (!safe)
         {
+            free(customers_copy);
+            free(available_copy);
+            free(finish);
+            free(work);
             return 1;
         }
     }
     
-    return 0;
     free(customers_copy);
     free(available_copy);
     free(finish);
     free(work);
+
+    return 0;
 }
 
 int check_RQ(int *resquest, Customers **customers, int customer_number, int *available) {
