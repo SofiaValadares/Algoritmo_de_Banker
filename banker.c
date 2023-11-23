@@ -238,7 +238,7 @@ Customers **get_customers() {
 
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
             customers[i][j].maximum = resources_customers[j];
-            customers[i][j].need = resources_customers[j];
+            customers[i][j].need = customers[i][j].maximum - customers[i][j].allocation;
         }
     }
 
@@ -389,7 +389,7 @@ void exec_RQ(Customers ***customers, int **available, int *request, int customer
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         (*customers)[customer_number][i].allocation += request[i];
-        (*customers)[customer_number][i].need -= request[i];
+        (*customers)[customer_number][i].need = (*customers)[customer_number][i].maximum - (*customers)[customer_number][i].allocation;
 
         (*available)[i] -= request[i];
 
@@ -422,7 +422,7 @@ void exec_RL(Customers ***customers, int **available, int *request, int customer
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         (*customers)[customer_number][i].allocation -= request[i];
-        (*customers)[customer_number][i].need += request[i];
+        (*customers)[customer_number][i].need = (*customers)[customer_number][i].maximum - (*customers)[customer_number][i].allocation;
 
         (*available)[i] += request[i];
 
