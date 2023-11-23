@@ -188,7 +188,14 @@ void get_number_of_customers() {
 }
 
 int *get_resources(char *argv[]) {
-    int *resources = (int*)malloc(NUMBER_OF_RESOURCES* sizeof(int));
+    int *resources = NULL;
+
+    resources = (int*)malloc(NUMBER_OF_RESOURCES* sizeof(int));
+
+    if (resources == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         resources[i] = atoi(argv[i + 1]);
@@ -198,7 +205,14 @@ int *get_resources(char *argv[]) {
 }
 
 int *get_resources_customers(FILE *f) {
-    int *resources = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+    int *resources = NULL;
+
+    resources = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    if (resources == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_RESOURCES - 1; i++) {
         fscanf(f, "%d,",&resources[i]);
@@ -212,10 +226,22 @@ int *get_resources_customers(FILE *f) {
 }
 
 Customers **get_customers_alocation() {
-    Customers **customers = (Customers **)malloc(NUMBER_OF_CUSTOMER * sizeof(Customers *));
+    Customers **customers = NULL;
+
+    customers = (Customers **)malloc(NUMBER_OF_CUSTOMER * sizeof(Customers *));
+
+    if (customers == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
         customers[i] = (Customers *)malloc(NUMBER_OF_RESOURCES *sizeof(Customers));
+
+        if (customers[i] == NULL) {
+            fprintf(stderr, "Erro while allocation memory\n");
+            exit(0);
+        }
 
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
             customers[i][j].maximum = 0;
@@ -254,7 +280,14 @@ Customers **get_customers() {
 }
 
 int *get_request() {
-    int *request = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+    int *request = NULL;
+
+    request = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    if (request == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         scanf("%d", &request[i]);
@@ -265,7 +298,15 @@ int *get_request() {
 
 int check_safe_state(int *resquest, Customers **customers, int customer_number, int *available) {
     Customers **customers_copy = get_customers_alocation();
-    int *available_copy = malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    int *available_copy = NULL;
+
+    available_copy = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    if (available_copy == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
@@ -282,13 +323,27 @@ int check_safe_state(int *resquest, Customers **customers, int customer_number, 
         available_copy[i] = available[i] - resquest[i];
     }
     
-    int *finish = (int*)malloc(NUMBER_OF_CUSTOMER * sizeof(int));
+    int *finish = NULL;
+    
+    finish = (int*)malloc(NUMBER_OF_CUSTOMER * sizeof(int));
+
+    if (finish == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
  
     for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
         finish[i] = 0;
     }
  
-    int *work = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+    int *work = NULL;
+
+    work = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
+
+    if (work == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
     
     for (int i = 0; i < NUMBER_OF_RESOURCES ; i++) {
         work[i] = available_copy[i];
@@ -439,7 +494,14 @@ void exec_RL(Customers ***customers, int **available, int *request, int customer
 }
 
 Customers *get_numbers_formats(Customers **customers) {
-    Customers *numbers_formats = (Customers*)malloc(NUMBER_OF_RESOURCES * sizeof(Customers));
+    Customers *numbers_formats = NULL;
+
+    numbers_formats = (Customers*)malloc(NUMBER_OF_RESOURCES * sizeof(Customers));
+
+    if (numbers_formats == NULL) {
+        fprintf(stderr, "Erro while allocation memory\n");
+        exit(0);
+    }
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         Customers biggest_numbers = {1, 1, 1};
