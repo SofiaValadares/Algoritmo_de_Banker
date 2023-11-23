@@ -197,19 +197,16 @@ int *get_resources(char *argv[]) {
     return resources;
 }
 
-int *get_resources_customers(char line[]) {
+int *get_resources_customers(FILE *f) {
     int *resources = (int*)malloc(NUMBER_OF_RESOURCES * sizeof(int));
 
-    int ind = 0;
-
-    char *token = strtok(line, ",");
-
-    while (token != NULL) {
-        resources[ind] = atoi(token);
-
-        token = strtok(NULL, ",");
-        ind++;
+    for (int i = 0; i < NUMBER_OF_RESOURCES - 1; i++) {
+        fscanf(f, "%d,",&resources[i]);
     }
+
+    fscanf(f,"%d", &resources[NUMBER_OF_RESOURCES - 1]);
+
+    fgetc(f);
 
     return resources;
 }
@@ -243,11 +240,7 @@ Customers **get_customers() {
     }
 
     for (int i = 0; i < NUMBER_OF_CUSTOMER; i++) {
-        char line[1501];
-
-        fgets(line, sizeof(line), f);
-
-        int *resources_customers = get_resources_customers(line);
+        int *resources_customers = get_resources_customers(f);
 
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
             customers[i][j].maximum = resources_customers[j];
