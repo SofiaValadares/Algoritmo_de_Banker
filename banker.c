@@ -594,36 +594,36 @@ Customers *get_numbers_formats(Customers **customers) {
     return numbers_formats;
 }
 
-Customers get_size_line_numbers(Customers *numbers_formats) {
-    Customers size_line_numbers = {0, 0, 0};
+Customers get_size_line(Customers *numbers_formats) {
+    Customers size_line = {0, 0, 0};
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        size_line_numbers.maximum += numbers_formats[i].maximum;
-        size_line_numbers.maximum++;
+        size_line.maximum += numbers_formats[i].maximum;
+        size_line.maximum++;
 
-        size_line_numbers.allocation += numbers_formats[i].allocation;
-        size_line_numbers.allocation++;
+        size_line.allocation += numbers_formats[i].allocation;
+        size_line.allocation++;
 
-        size_line_numbers.need += numbers_formats[i].need;
-        size_line_numbers.need++;
+        size_line.need += numbers_formats[i].need;
+        size_line.need++;
     }
 
-    return size_line_numbers;
+    return size_line;
 }
 
 void print_status(Customers **customers, int *available) {
     Customers *numbers_formats = get_numbers_formats(customers);
-    Customers size_line_numbers = get_size_line_numbers(numbers_formats);
+    Customers size_line = get_size_line(numbers_formats);
 
     printf("MAXIMUM ");
 
-    for (int i = 8; i < size_line_numbers.maximum; i++) {
+    for (int i = 8; i < size_line.maximum; i++) {
         printf(" ");
     }
 
     printf("| ALLOCATION ");
 
-    for (int i = 11; i < size_line_numbers.allocation; i++) {
+    for (int i = 11; i < size_line.allocation; i++) {
         printf(" ");
     }
 
@@ -634,7 +634,7 @@ void print_status(Customers **customers, int *available) {
             printf("%*d ", numbers_formats[j].maximum, customers[i][j].maximum);
         }
 
-        for (int j = size_line_numbers.maximum; j < 8; j++) {
+        for (int j = size_line.maximum; j < 8; j++) {
             printf(" ");
         }
 
@@ -644,7 +644,7 @@ void print_status(Customers **customers, int *available) {
             printf("%*d ", numbers_formats[j].allocation, customers[i][j].allocation);
         }
 
-        for (int j = size_line_numbers.allocation; j < 11; j++) {
+        for (int j = size_line.allocation; j < 11; j++) {
             printf(" ");
         }
 
