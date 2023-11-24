@@ -664,4 +664,6 @@ void print_status(Customers **customers, int *available) {
     }
 
     printf("\n");
+
+    free(numbers_formats);
 }
