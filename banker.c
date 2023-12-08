@@ -100,7 +100,7 @@ void check_commands_file() {
     ch = fgetc(f);
 
     while (ch != EOF) {
-        if ((ch != ' ' || (ch == ' ' && ch_ant == ' ')) && (ch < '0' || ch > '9') && (ch != '\n' || (ch == '\n' && ch_ant == '\n')) && (ch != 'R' && (ch == 'R' && ch_ant != '\n')) && (ch != 'Q' || (ch == 'Q' && ch_ant != 'R')) && (ch != 'L' || (ch == 'L' && ch_ant != 'R')) && (ch != '*' || (ch == '*' && ch_ant != '\n'))) {
+        if ((ch != ' ' || (ch == ' ' && ch_ant == ' ')) && (ch < '0' || ch > '9') && (ch != '\n' || (ch == '\n' && ch_ant == '\n')) && (ch != 'R' && (ch == 'R' || ch_ant != '\n')) && (ch != 'Q' || (ch == 'Q' && ch_ant != 'R')) && (ch != 'L' || (ch == 'L' && ch_ant != 'R')) && (ch != '*' || (ch == '*' && ch_ant != '\n'))) {
             fprintf(stderr, "Fail to read commands.txt\n");
             exit(0);
         }
