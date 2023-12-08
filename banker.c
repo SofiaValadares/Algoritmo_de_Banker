@@ -459,24 +459,6 @@ int check_RQ(int *resquest, Customers **customers, int customer_number, int *ava
 
             return 0;
         }
-
-        /*if (resquest[i] > available[i]) {
-            printf("The resources ");
- 
-            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                printf("%d ", available[j]);
-            }
-
-            printf("are not enough to customer %d request ", customer_number);
-
-            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                printf("%d ", resquest[j]);
-            }
-
-            printf("\n");
-
-            return 0;
-        }*/
     }
 
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
